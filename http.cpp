@@ -49,8 +49,8 @@ int main()
 
     int stat = getaddrinfo(host, "80", &hints, &res); 
     
-    if(res == nullptr && stat !=0){
-        perror("problem with allocation of the linked list on res!\n");
+    if(stat !=0){
+        perror("problem with allocation of the linked list for res!\n");
         return EXIT_FAILURE;
     }
 
@@ -116,6 +116,15 @@ int main()
     while((bytes_received = recv(socket_fd, buffer, 4095, 0)) > 0){
         buffer[bytes_received] = '\0';
     }
+    
+    if(bytes_received == -1){
+        
+        perror("recv failed!\n");
+        close(socket_fd);
+        free(buffer);
+        freeaddrinfo(res);
+        return EXIT_FAILURE;
+    }
 
     for(ssize_t i = 0; i < 4095; i++){
         switch(buffer[i]){
@@ -136,22 +145,13 @@ int main()
                 break;
         }
     }
-
     std::cout << '\n';
-    if(bytes_received == -1){
-        
-        perror("recv failed!\n");
-        close(socket_fd);
-        free(buffer);
-        freeaddrinfo(res);
-        return EXIT_FAILURE;
-    }
 
     // free memory after usage
     close(socket_fd);
-    free(buffer);
     freeaddrinfo(res);
-
+    free(buffer);
+    
     return 0;
-
+    
 }
